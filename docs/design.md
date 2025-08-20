@@ -60,7 +60,6 @@ flowchart TD
     select -->|No Relevant Links| answer
     recursive --> assess
     recursive -->|Max Depth Reached| answer
-    answer --> end[Final Answer]
     
     subgraph "Crawling Loop"
         assess
