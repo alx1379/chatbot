@@ -38,7 +38,7 @@ class QuestionAnalysisNode(Node):
     def post(self, shared, prep_res, exec_res):
         shared["question_analysis"] = exec_res["analysis"]
         shared["question_embedding"] = exec_res["embedding"]
-        return "initial_crawl"
+        return "default"
 
 class InitialCrawlNode(Node):
     """Crawl the starting webpage and extract structured content"""
@@ -66,7 +66,7 @@ class InitialCrawlNode(Node):
         shared["crawl_queue"] = [link["url"] for link in links[:10]]  # Limit initial queue
         shared["current_depth"] = 0
         
-        return "content_assessment"
+        return "default"
 
 class ContentAssessmentNode(Node):
     """Determine if current crawled content contains sufficient information to answer the question"""
@@ -141,9 +141,10 @@ class ContentAssessmentNode(Node):
                 shared["crawled_pages"][url] = page_data
         
         if exec_res["sufficient"] or shared["current_depth"] >= shared.get("max_crawl_depth", 3):
-            return "answer_generation"
+            shared["_next_node"] = "answer_generation"
         else:
-            return "link_selection"
+            shared["_next_node"] = "link_selection"
+        return "default"
 
 class LinkSelectionAgentNode(Node):
     """Intelligently select which links to follow next based on question context and link relevance"""
@@ -189,31 +190,22 @@ class LinkSelectionAgentNode(Node):
     def post(self, shared, prep_res, exec_res):
         if exec_res:
             shared["selected_links"] = exec_res
-            return "recursive_crawl"
+            shared["_next_node"] = "recursive_crawl"
         else:
-            return "answer_generation"
+            shared["_next_node"] = "answer_generation"
+        return "default"
 
 class RecursiveCrawlNode(BatchNode):
     """Crawl selected links and add their content to the knowledge base"""
     
     def prep(self, shared):
-        return {
-            "selected_links": shared.get("selected_links", []),
-            "current_depth": shared["current_depth"]
-        }
+        # BatchNode expects a list of items to process
+        return shared.get("selected_links", [])
     
-    def exec(self, prep_data):
-        selected_links = prep_data["selected_links"]
-        current_depth = prep_data["current_depth"]
-        
-        # Crawl each selected link
-        results = []
-        for url in selected_links:
-            page_data = web_scraper(url)
-            page_data["crawl_depth"] = current_depth + 1
-            results.append(page_data)
-        
-        return results
+    def exec(self, url):
+        # Each URL is processed individually by BatchNode
+        page_data = web_scraper(url)
+        return page_data
     
     def post(self, shared, prep_res, exec_res):
         # Add new pages to crawled_pages
@@ -224,7 +216,7 @@ class RecursiveCrawlNode(BatchNode):
         # Increment depth
         shared["current_depth"] += 1
         
-        return "content_assessment"
+        return "default"
 
 class AnswerGenerationNode(Node):
     """Synthesize final answer using all collected relevant content"""
@@ -277,4 +269,4 @@ class AnswerGenerationNode(Node):
     
     def post(self, shared, prep_res, exec_res):
         shared["final_answer"] = exec_res
-        return "complete"
+        return None  # End the flow

@@ -104,7 +104,10 @@ def demo():
         print("✅ Demo completed successfully!")
         print(f"Answer: {shared.get('final_answer', 'No answer')}")
     except Exception as e:
+        import traceback
         print(f"❌ Demo failed: {str(e)}")
+        print("Full traceback:")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--demo":

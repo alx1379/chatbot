@@ -18,14 +18,8 @@ def create_chatbot_flow():
     recursive_crawl = RecursiveCrawlNode()
     answer_generation = AnswerGenerationNode()
     
-    # Connect nodes with routing logic
-    question_analysis.add_edge("initial_crawl", initial_crawl)
-    initial_crawl.add_edge("content_assessment", content_assessment)
-    content_assessment.add_edge("answer_generation", answer_generation)
-    content_assessment.add_edge("link_selection", link_selection)
-    link_selection.add_edge("recursive_crawl", recursive_crawl)
-    link_selection.add_edge("answer_generation", answer_generation)
-    recursive_crawl.add_edge("content_assessment", content_assessment)
+    # Simple sequential flow - each node handles its own logic
+    question_analysis >> initial_crawl >> content_assessment >> link_selection >> recursive_crawl >> answer_generation
     
     # Create flow starting with question analysis
     return Flow(start=question_analysis)
@@ -39,7 +33,7 @@ def initialize_shared_store(user_question: str, starting_url: str) -> dict:
         "question_analysis": "",
         "crawled_pages": {},
         "crawl_queue": [],
-        "max_crawl_depth": 3,
+        "max_crawl_depth": 5,
         "current_depth": 0,
         "sufficient_content": False,
         "selected_links": [],

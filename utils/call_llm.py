@@ -3,7 +3,11 @@ import os
 
 # Learn more about calling the LLM: https://the-pocket.github.io/PocketFlow/utility_function/llm.html
 def call_llm(prompt):    
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "your-api-key"))
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is not set")
+    
+    client = OpenAI(api_key=api_key)
     r = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}]
