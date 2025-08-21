@@ -3,8 +3,9 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import time
 from typing import Dict, List, Optional
+from config import Config
 
-def web_scraper(url: str, max_content_length: int = 10000) -> Dict:
+def web_scraper(url: str, max_content_length: int = None) -> Dict:
     """
     Scrape a webpage and extract structured content.
     
@@ -16,13 +17,17 @@ def web_scraper(url: str, max_content_length: int = 10000) -> Dict:
         Dict with {url, title, content, links, metadata}
     """
     try:
+        # Use max_content_length from config if not provided
+        if max_content_length is None:
+            max_content_length = Config.MAX_CONTENT_LENGTH
+            
         # Add headers to avoid being blocked
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': Config.USER_AGENT
         }
         
         # Make request with timeout
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=Config.REQUEST_TIMEOUT)
         response.raise_for_status()
         
         # Parse HTML

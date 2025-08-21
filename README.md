@@ -75,14 +75,24 @@ flowchart TD
    pip install -r requirements.txt
    ```
 
-4. **Set up your OpenAI API key**:
+4. **Configure environment variables**:
+   
+   Copy the example environment file:
    ```bash
-   export OPENAI_API_KEY='your-api-key-here'
+   cp .env.example .env
    ```
    
-   Or create a `.env` file:
+   Edit the `.env` file and add your OpenAI API key:
+   ```bash
+   nano .env  # or use your preferred editor
    ```
-   OPENAI_API_KEY=your-api-key-here
+   
+   Update the `.env` file with your actual values:
+   ```
+   OPENAI_API_KEY=your-actual-openai-api-key-here
+   OPENAI_MODEL=gpt-4o
+   MAX_CRAWL_DEPTH=3
+   # ... other configuration options
    ```
 
 ## 🚀 Usage
@@ -150,15 +160,45 @@ To install Python packages, you can use pip, which is the standard package insta
 
 ## ⚙️ Configuration
 
-You can customize the crawling behavior by modifying the `initialize_shared_store()` function in `flow.py`:
+The chatbot uses a centralized configuration system through `config.py` and `.env` files.
+
+### Configuration Options
+
+All configuration is managed through environment variables in your `.env` file:
+
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_MODEL=gpt-4o                           # LLM model to use
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small # Embedding model
+
+# Crawling Configuration
+MAX_CRAWL_DEPTH=3          # Maximum depth to crawl
+MAX_CONTENT_LENGTH=10000   # Max characters per page
+MAX_LINKS_PER_PAGE=10      # Max links to extract per page
+MAX_LINKS_TO_CRAWL=3       # Max links to follow per iteration
+
+# Request Configuration
+REQUEST_TIMEOUT=10         # HTTP request timeout in seconds
+USER_AGENT=Mozilla/5.0...  # User agent for web requests
+
+# Content Processing Configuration
+MIN_RELEVANCE_SCORE=0.1    # Minimum relevance score for content
+EMBEDDING_MAX_CHARS=8000   # Max characters for embedding
+CONTENT_PREVIEW_CHARS=2000 # Characters for content preview
+
+# Debug Configuration
+DEBUG=false                # Enable debug mode
+VERBOSE_LOGGING=false      # Enable verbose logging
+```
+
+### Viewing Current Configuration
+
+You can check your current configuration by running:
 
 ```python
-def initialize_shared_store(user_question: str, starting_url: str) -> dict:
-    return {
-        # ... other settings ...
-        "max_crawl_depth": 3,  # Maximum crawling depth
-        # ... other settings ...
-    }
+from config import Config
+print(Config.get_summary())
 ```
 
 ## 🔧 Components
@@ -199,6 +239,9 @@ chatbot/
 ├── nodes.py               # Node implementations
 ├── flow.py                # Flow definition
 ├── main.py                # Main application
+├── config.py              # Configuration management
+├── .env                   # Environment variables (create from .env.example)
+├── .env.example           # Example environment variables
 └── requirements.txt       # Dependencies
 ```
 
